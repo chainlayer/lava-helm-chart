@@ -1,0 +1,43 @@
+{{- with .Values.provider.autoscaling.hpa }}{{- if .enabled }}
+{{- $validation := required "[VALIDATION] Missing required value for HPA: 'targetCPU' or 'targetMemory'" (or .targetCPU .targetMemory) }}
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: {{ include "common.fullname" $ }}
+  namespace: {{ include "common.namespace" $ }}
+  labels: {{- include "common.labels" $ | nindent 4 }}
+  {{- with .annotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "common.fullname" $ }}
+  {{- with .minReplicas }}
+  minReplicas: {{ . }}
+  {{- end }}
+  {{- with .maxReplicas }}
+  maxReplicas: {{ . }}
+  {{- end }}
+  {{- if or .targetMemory .targetCPU}}
+  metrics:
+    {{- with .targetMemory }}
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: {{ . }}
+    {{- end }}
+    {{- with .targetCPU }}
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: {{ . }}
+    {{- end }}
+  {{- end }}
+{{- end }}{{- end }}

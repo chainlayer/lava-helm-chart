@@ -1,0 +1,434 @@
+nameOverride: ""
+fullnameOverride: ""
+
+## Configuration for the Lava Provider
+## Ref: https://docs.lavanet.xyz/provider-setup
+config:
+  # Manage the provider with lavavisor
+  lavavisor: false
+  # The log level of the provider
+  logLevel: info
+  # REQUIRED: The moniker of the provider
+  moniker: test
+  # REQUIRED: The public endpoint of the provider
+  endpoint: ""
+  # REQUIRED: The chain ID of the provider
+  chainId: ""
+  # REQUIRED: The RPC node URL of the provider
+  rpcNodeUrl: ""
+
+  ## A secret containing the private key and password for the provider
+  ## Ref: https://github.com/chainlayer/lava-helm-chart/blob/main/README.md#private-key-configuration
+  key:
+    # The name of the account that is being imported from the private key
+    name: ""
+    # REQUIRED: The name of the secret containing the private key
+    # Example: secretName: "my-secret "
+    secretName: ""
+    # REQUIRED: The key in the secret containing the private key
+    secretKey: ""
+    # REQUIRED: The name of the secret containing the private key password
+    passwordSecretName: ""
+    # REQUIRED: The key in the secret containing the private key password
+    passwordSecretKey: ""
+
+  # Use the cache service to improve performance
+  # Requires the cache service to be deployed separetly
+  cache:
+    # Use the cache service
+    enabled: false
+    # The endpoint of the cache service
+    endpoint: ""
+
+  # Additional flags to pass to the provider process.
+  flags: {}
+    # parallel-connections: 10
+    # polling-multiplier: 1.5
+
+  # REQUIRED: The geolocation of the provider.
+  geolocation: ""
+
+  # REQUIRED: A list of supported chain IDs.
+  # This list must match what is provided in the configuration file for the provider service.
+  supportedChainIds: []
+    # - LAV1
+
+  # The backend configration for the provider service.
+  configYaml: {}
+    # endpoints:
+    #   - api-interface: tendermintrpc
+    #     chain-id: LAV1
+    #     network-address:
+    #       address: 0.0.0.0:2024
+    #       disable-tls: true
+    #     node-urls:
+    #       - url: http://lava-rpc.mydomain.com:26657
+    #       - url: ws://lava-rpc.mydomain.com:26657/websocket
+
+    #   - api-interface: rest
+    #     chain-id: LAV1
+    #     network-address:
+    #       address: 0.0.0.0:2024
+    #       disable-tls: true
+    #     node-urls:
+    #       - url: http://lava-rpc.mydomain.com:1317
+
+    #   - api-interface: grpc
+    #     chain-id: LAV1
+    #     network-address:
+    #       address: 0.0.0.0:2024
+    #       disable-tls: true
+    #     node-urls:
+    #       - url: lava-rpc.mydomain.com:9090
+
+  # Alternative to providing the configuration in the `configYaml` field
+  existingConfigMap: ""
+
+  # Load additional environment variables from a secret or configmap
+  envFrom: []
+
+  # Add additional environment variables to the deployment
+  env: []
+
+# Configuration for the Lava Provider instance
+provider:
+  image:
+    # REQUIRED: The image repository to pull from
+    repository: ""
+    # REQUIRED: The image tag or digest to pull
+    tag: ""
+    digest: ""
+    pullPolicy: IfNotPresent
+    pullSecrets: []
+
+  # The number of replicas to deploy. This value is only used if autoscaling is disabled.
+  replicaCount: 1
+
+  # The port used for the provider service. This should match the endpoint specified in the provider config.
+  containerPort:
+    name: provider
+    number: 2204
+
+  ## Probes for ApplicationSet controller (optional)
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
+  readinessProbe:
+    # -- Enable Kubernetes liveness probe for ApplicationSet controller
+    enabled: true
+    # -- Number of seconds after the container has started before [probe] is initiated
+    initialDelaySeconds: 30
+    # -- How often (in seconds) to perform the [probe]
+    periodSeconds: 10
+    # -- Number of seconds after which the [probe] times out
+    timeoutSeconds: 5
+    # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
+    successThreshold: 1
+    # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
+    failureThreshold: 10
+
+  livenessProbe:
+    # -- Enable Kubernetes liveness probe for ApplicationSet controller
+    enabled: true
+    # -- Number of seconds after the container has started before [probe] is initiated
+    initialDelaySeconds: 60
+    # -- How often (in seconds) to perform the [probe]
+    periodSeconds: 5
+    # -- Number of seconds after which the [probe] times out
+    timeoutSeconds: 5
+    # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
+    successThreshold: 1
+    # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
+    failureThreshold: 20
+
+  # Custom liveness probe configuration
+  customLivenessProbe: {}
+
+  # Custom readiness probe configuration
+  customReadinessProbe: {}
+
+  # Resource limits and requests
+  resources:
+    requests:
+      cpu: 500m
+      memory: 128Mi
+    limits:
+      cpu: 1500m
+      memory: 512Mi
+
+  podSecurityContext:
+    enabled: false
+    # runAsUser: 1000
+    # runAsGroup: 1000
+    # fsGroup: 1000
+    # runAsNonRoot: true
+
+  containerSecurityContext:
+    enabled: false
+    # seLinuxOptions: {}
+    # runAsUser: 1001
+    # runAsGroup: 1001
+    # runAsNonRoot: true
+    # readOnlyRootFilesystem: true
+    # privileged: false
+    # allowPrivilegeEscalation: false
+    # capabilities:
+    #   drop: ["ALL"]
+    # seccompProfile:
+    #   type: "RuntimeDefault"
+
+  # Extra labels to be added to the deployments.
+  deploymentLabels: {}
+    # my-deployment-label: value
+
+  # Extra annotations to be added to the deployments.
+  deploymentAnnotations: {}
+    # my-deployment-annotation: value
+
+  # Extra labels to be added to the pods.
+  podLabels: {}
+    # my-pod-label: value
+
+  # Extra annotations to be added to the pods.
+  podAnnotations: {}
+    # my-pod-annotation: value
+
+  # Configure affinity for the deployment.
+  affinity: {}
+    # requiredDuringSchedulingIgnoredDuringExecution:
+    #   nodeSelectorTerms:
+    #   - matchExpressions:
+    #     - key: topology.kubernetes.io/zone
+    #       operator: In
+    #       values:
+    #       - antarctica-east1
+    #       - antarctica-west1
+    # preferredDuringSchedulingIgnoredDuringExecution:
+    # - weight: 1
+    #   preference:
+    #     matchExpressions:
+    #     - key: another-node-label-key
+    #       operator: In
+    #       values:
+    #       - another-node-label-value
+
+  # Schedule the deployment on a specific node or node type using selectors.
+  nodeSelector: {}
+    # kubernetes.io/zone: eu-central
+
+  tolerations: []
+    # - key: "kubernetes.io/nodeType"
+    #   operator: "Equal"
+    #   value: "gpu"
+    #   effect: "NoSchedule"
+
+  # The update strategy for the deployment.
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 5%
+
+  # Only used when persistence is enabled and deployment is managed with a Statefulset.
+  podManagementPolicy: OrderedReady
+
+  # Set the priority class for the pods managed by the deployment.
+  priorityClassName: ""
+
+  # Set custom topology spread constraints.
+  topologySpreadConstraints: []
+    # - maxSkew: 1
+    #   topologyKey: kubernetes.io/hostname
+    #   whenUnsatisfiable: DoNotSchedule
+    #   labelSelector:
+    #     matchLabels:
+    #       app: foo
+    #   matchLabelKeys:
+    #     - pod-template-hash
+
+  # Additional init containers to be included in the deployed pods.
+  initContainers: []
+
+  # Additional sidecar containers to be included in the deployed pods.
+  sidecars: []
+
+  # Enable a Pod Disruption Budget for the deployment.
+  # Note that if you run with a single replica, using a pdb will effectively
+  # restrict your ability to drain the node the deployment is running on.
+  pdb:
+    # Enable the Pod Disruption Budget
+    enabled: false
+    # The minimum number of pods that must be available
+    minAvailable: 1
+    # The maximum number of pods that can be unavailable
+    maxUnavailable: 3
+
+  # Autoscaling configuration
+  autoscaling:
+    # Vertical Pod Autoscaler (scale resources)
+    # Should not be used with the Horizontal Pod Autoscaler (HPA) on the same resource metric (CPU or memory)
+    vpa:
+      # Enable the Vertical Pod Autoscaler
+      enabled: false
+      # Annotations to add to the VPA
+      annotations: {}
+      # List of resources to control
+      controlledResources: []
+      # Settings for the VPA
+      minAllowed: 1
+      maxAllowed: 3
+      # Policy for updating the VPA
+      updatePolicy:
+        updateMode: Auto
+
+    # Horizontal Pod Autoscaler (scale pods)
+    hpa:
+      # Enable the Horizontal Pod Autoscaler
+      enabled: false
+      # Annotations to add to the HPA
+      annotations: {}
+      # The minimum number of replicas
+      minReplicas: 1
+      # The maximum number of replicas
+      maxReplicas: 5
+      # Metrics to use for scaling
+      targetCPU: "70"
+      targetMemory: "70"
+
+# Service configuration
+service:
+  # Expose the deployment via a service
+  enabled: true
+  # Name override for the service
+  nameOverride: ""
+  # The type of service to create
+  type: ClusterIP
+  # The port used for the service
+  port:
+    # The name of the port
+    name: service
+    # The port number
+    number: 2204
+  # Specify the IP to use when type is ClusterIP
+  clusterIP: ""
+  # Specify the external IP to use when type is LoadBalancer
+  loadBalancerIP: ""
+  # Specify source ranges for the load balancer
+  loadBalancerSourceRanges: []
+  # The external traffic policy for the service
+  externalTrafficPolicy: Cluster
+  # Annotations to add to the service
+  annotations: {}
+  # The session affinity for the service
+  sessionAffinity: None
+  # The session affinity config for the service
+  sessionAffinityConfig: {}
+
+# Ingress configuration
+ingress:
+  # Enable ingress
+  enabled: false
+  # The class of the ingress controller
+  className: ""
+  # Annotations to add to the ingress
+  annotations: {}
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+    # nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+  # Hosts to add to the ingress
+  hosts: []
+    # - host: provider.mydomain.com
+    #   paths:
+    #     - path: /
+    #       pathType: ImplementationSpecific
+  # TLS configuration
+  tls: []
+  #  - secretName: provider-mydomain-com-tls
+  #    hosts:
+  #      - provider.mydomain.com
+
+# Storage configuration
+persistence:
+  # Enable persistence using PVC
+  enabled: false
+  # The name of the PVC to use
+  mountPath: /data
+  # The subpath to mount the volume at
+  subPath: ""
+  # Annotations to add to the PVC
+  annotations: {}
+  # The storage class to use
+  storageClass: ""
+  # The accessmodes for the PVC
+  accessModes:
+    - ReadWriteOnce
+  # The size of the PVC
+  size: ""
+  # The name of an existing PVC to use
+  existingClaim: ""
+  # Selectors for the PVC
+  selector: {}
+  # The data source for the PVC
+  dataSource: {}
+
+# Service Account configuration
+serviceAccount:
+  # Specifies whether a service account should be created
+  enabled: true
+  # Name override for the service account
+  nameOverride: ""
+  # The annotations to add to the service account
+  annotations: {}
+  # Automount the service account token
+  automountServiceAccountToken: true
+
+# Metrics configuration
+metrics:
+  # Enable prometheus metrics
+  enabled: false
+  # The port to be used for the metrics service
+  port:
+    # The name of the port
+    name: metrics
+    # The port number
+    number: 2205
+  # Enable prometheus scraping
+  serviceMonitor:
+    # Whether to enable the service monitor
+    enabled: false
+    # The namespace to deploy the service monitor
+    namespace: ""
+    # Labels to add to the service monitor
+    labels: {}
+    # Annotations to add to the service monitor
+    annotations: {}
+    # The job label to add to the service monitor
+    jobLabel: ""
+    # Whether to honor the labels
+    honorLabels: false
+    # The interval at which to scrape the metrics
+    interval: ""
+    # Scrape timeout for the metrics (i.e 10s)
+    scrapeTimeout: ""
+    # The path to scrape the metrics from
+    path: "/metrics"
+    # Metric relabelings to apply to the metrics
+    metricRelabelings: []
+    # Relabelings to apply to the metrics
+    relabelings: []
+    # Selector to match the service monitor
+    selector: {}
+
+  # Add prometheus rules to the deployment.
+  prometheusRules:
+    # Whether to enable the prometheus rules
+    enabled: false
+    # A list of prometheus rules to add to the deployment.
+    # Refer to the Prometheus documentation for more information on how to write rules.
+    rules:
+      - name: "LavaProviderAlerts"
+        rules:
+          - alert: "LavaProviderStoppedRelaying"
+            expr: "sum(increase(lava_provider_total_relays_serviced[10m])) by(spec) == 0"
+            for: "5m"
+            labels:
+              severity: "critical"
+            annotations:
+              description: "{{ $labels.spec }} has not serviced any relays for the past 15 minutes"

@@ -1,0 +1,10 @@
+{{- with .Values.metrics.prometheusRules }}{{- if .enabled }}
+---
+apiVersion: "monitoring.coreos.com/v1"
+kind: "PrometheusRule"
+metadata:
+  name: "lava-provider-alerts"
+  namespace: {{ include "common.namespace" $ }}
+spec:
+  groups: {{ toYaml .rules | nindent 4 }}
+{{- end }}{{- end }}

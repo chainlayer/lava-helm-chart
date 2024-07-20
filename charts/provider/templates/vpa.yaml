@@ -1,0 +1,28 @@
+{{- with .Values.provider.autoscaling.vpa }}{{- if .enabled }}
+---
+apiVersion: autoscaling/v2
+kind: VerticalPodAutoscaler
+metadata:
+  name: {{ include "common.fullname" $ }}
+  namespace: {{ include "common.namespace" $ }}
+  labels: {{- include "common.labels" $ | nindent 4 }}
+  {{- with .annotations }}
+  annotations: {{- toYaml $ | nindent 4 }}
+  {{- end }}
+spec:
+  resourcePolicy:
+    containerPolicies:
+    - containerName: deployment
+      controlledResources:
+        {{- toYaml .controlledResources | nindent 8 }}
+      maxAllowed: {{ .maxAllowed }}
+      minAllowed: {{ .minAllowed }}
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: {{ include "common.fullname" $ }}
+  {{- if .updatePolicy }}
+  updatePolicy:
+    updateMode: {{ .updatePolicy.updateMode }}
+  {{- end }}
+{{- end }}{{- end }}

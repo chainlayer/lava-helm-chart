@@ -1,0 +1,20 @@
+{{- with .Values.provider.pdb }}{{- if .enabled }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "common.fullname" $ }}
+  namespace: {{ include "common.namespace" $ }}
+spec:
+  {{- with .minAvailable }}
+  minAvailable: {{ . }}
+  {{- end }}
+  {{- with .maxUnvailable }}
+  maxUnavailable: {{ . }}
+  {{- end }}
+  selector:
+    matchLabels: {{- include "common.matchLabels" $ | nindent 6 }}
+      {{- with $.Values.provider.podLabels }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+{{ end }}{{ end }}

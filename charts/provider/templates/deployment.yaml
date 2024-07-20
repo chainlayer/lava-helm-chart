@@ -1,0 +1,275 @@
+{{- if not .Values.persistence.enabled }}
+{{- with .Values.config }}
+{{- $validation := required "[VALITATION] Missing one or more required config values: 'endpoint', 'supportedChainIds', 'rpcNodeUrl', 'secretName, 'secretKey', 'passwordSecretName', passwordSecretKey" (and .endpoint .supportedChainIds .rpcNodeUrl .key.secretName .key.secretKey .key.passwordSecretName .key.passwordSecretKey) }}
+{{- end }}
+{{- with .Values.provider }}
+{{- $validation := required "[VALITATION] Missing one or more required image values: 'repository', 'tag' or 'digest'" (and .image.repository (or .image.tag .image.digest)) }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "common.fullname" $ }}
+  namespace: {{ include "common.namespace" $ }}
+  labels: {{- include "common.labels" $ | nindent 4 }}
+    {{- with .providerLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .providerAnnotations }}
+  annotations: {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- if not .autoscaling.hpa.enabled }}
+  replicas: {{ .replicaCount }}
+  {{- end }}
+  strategy: {{- toYaml .updateStrategy | nindent 4 }}
+  selector:
+    matchLabels: {{- include "common.matchLabels" $ | nindent 6 }}
+  template:
+    metadata:
+      {{- with .podAnnotations }}
+      annotations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels: {{- include "common.labels" $ | nindent 8 }}
+        {{- with .podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with $.Values.serviceAccount }}{{- if .enabled }}
+      serviceAccountName: {{ default ( include "common.fullname" $ ) .nameOverride }}
+      automountServiceAccountToken: {{ .automountServiceAccountToken }}
+      {{- end }}{{- end }}
+      {{- if .podSecurityContext.enabled }}
+      securityContext:
+        {{- omit .podSecurityContext "enabled" | toYaml | nindent 8 }}
+      {{- end }}
+      {{- with .affinity }}
+      affinity: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .nodeSelector }}
+      nodeSelector: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .tolerations }}
+      tolerations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .priorityClassName }}
+      priorityClassName: {{ . }}
+      {{- end }}
+      {{- with .schedulerName }}
+      schedulerName: {{ . }}
+      {{- end }}
+      {{- with .topologySpreadConstraints }}
+      topologySpreadConstraints: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+        - name: import-key
+          {{- if .containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit .containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          image: {{ include "deployment.image" $ }}
+          {{- with .image.pullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
+          {{- with $.Values.config }}
+          command:
+           - sh
+           - -c
+           - |
+            #!/bin/sh
+            # exit when any command fails
+            set -e
+
+            # Import key into keyring
+            echo $KEY_PASSWORD | lavap keys \
+              import {{ default .moniker .key.name }} /tmp/keyfile/{{ .key.secretKey }} \
+              --keyring-backend "test" \
+              --home /data \
+              --keyring-dir /data
+
+            echo "Key imported successfully."
+          volumeMounts:
+            - name: data-volume
+              mountPath: /data
+            - name: private-key-volume
+              mountPath: /tmp/keyfile/{{ .key.secretKey }}
+              subPath: {{ .key.secretKey }}
+              readOnly: true
+          env:
+            - name: KEY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .key.passwordSecretName }}
+                  key: {{ .key.passwordSecretKey }}
+        {{- end }}
+        {{- with .initContainers }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      containers:
+        - name: {{ include "common.fullname" $ }}
+          {{- if .containerSecurityContext.enabled }}
+          securityContext:
+            {{- omit .containerSecurityContext "enabled" | toYaml | nindent 12 }}
+          {{- end }}
+          image: {{ include "deployment.image" $ }}
+          {{- with .image.pullPolicy }}
+          imagePullPolicy: {{ . }}
+          {{- end }}
+          {{- with $.Values.config }}{{- if not .lavavisor }}
+          command: ["lavap"]
+          args:
+            - "rpcprovider"
+            - "config.yaml"
+            - "--from"
+            - "{{ default .moniker .key.name }}"
+            - "--home"
+            - "/data"
+            - "--keyring-backend"
+            - "test"
+            - "--keyring-dir"
+            - "/data"
+            - "--geolocation"
+            - "{{ .geolocation }}"
+            - "--node"
+            - "{{ .rpcNodeUrl }}"
+            - "--chain-id"
+            - "{{ .chainId }}"
+            - "--log_level"
+            - "{{ .logLevel }}"
+            {{- with $.Values.metrics }}{{- if .enabled }}
+            - "--metrics-listen-address"
+            - "0.0.0.0:{{ .port.number }}"
+            {{- end }}{{- end }}
+            {{- with .cache }}{{- if .enabled }}
+            "--cache-be", "{{ .endpoint }}"
+            {{- end }}{{- end }}
+            {{- with .flags }}
+            {{- range $key, $value := . }}
+            - "--{{ $key }}"
+            - "{{ $value }}"
+            {{- end }}
+            {{- end }}
+          {{- else }}
+          command: ["lavavisor"]
+          args:
+            - "pod"
+            - "--cmd"
+            - "lavap"
+            - "rpcprovider"
+            - "config.yaml"
+            - "--from"
+            - "{{ default .moniker .key.name }}"
+            - "--home"
+            - "/data"
+            - "--keyring-backend"
+            - "test"
+            - "--keyring-dir"
+            - "/data"
+            - "--geolocation"
+            - "{{ .geolocation }}"
+            - "--node"
+            - "{{ .rpcNodeUrl }}"
+            - "--chain-id"
+            - "{{ .chainId }}"
+            - "--log_level"
+            - "{{ .logLevel }}"
+            {{- with $.Values.metrics }}{{- if .enabled }}
+            - "--metrics-listen-address"
+            - "0.0.0.0:{{ .port.number }}"
+            {{- end }}{{- end }}
+            {{- with .cache }}{{- if .enabled }}
+            "--cache-be", "{{ .endpoint }}"
+            {{- end }}{{- end }}
+            {{- with .flags }}
+            {{- range $key, $value := . }}
+            - "--{{ $key }}"
+            - "{{ $value }}"
+            {{- end }}
+            {{- end }}
+          {{- end }}{{- end }}
+          {{- with .env }}
+          env:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .envFrom }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          ports:
+            - name: {{ .containerPort.name }}
+              containerPort: {{ .containerPort.number }}
+              protocol: TCP
+            {{- with $.Values.metrics }}{{- if .enabled }}
+            - name: {{ .port.name }}
+              containerPort: {{ .port.number }}
+              protocol: TCP
+            {{- end }}{{- end }}
+          {{- if and (not .customLivenessProbe.enabled) (.livenessProbe.enabled) }}
+          {{- $metricsPort := required "Metrics port name is required for livenessProbe." $.Values.metrics.port.name }}
+          livenessProbe:
+            httpGet:
+              path: /metrics/overall-health
+              port: {{ $metricsPort }}
+            {{- omit .livenessProbe "enabled" | toYaml | nindent 12 }}
+          {{ else if .customLivenessProbe.enabled }}
+          livenessProbe:
+            {{- toYaml .customLivenessProbe | nindent 12 }}
+          {{- end -}}
+          {{ if and (not .customReadinessProbe) (.readinessProbe.enabled) -}}
+          readinessProbe:
+            exec:
+              {{- with $.Values.config }}
+              command:
+                - "lavap"
+                - "test"
+                - "rpcprovider"
+                - "--from"
+                - "{{ default .moniker .key.name }}"
+                - "--home"
+                - "/data"
+                - "--keyring-backend"
+                - "test"
+                - "--keyring-dir"
+                - "/data"
+                - "--node"
+                - "{{ .rpcNodeUrl }}"
+                - "--endpoints"
+                - {{ range .supportedChainIds }}"{{ $.Values.config.endpoint }}:443,{{ . }} "{{ end }}
+              {{- end }}
+            {{- omit .readinessProbe "enabled" | toYaml | nindent 12 }}
+          {{- else if .customReadinessProbe }}
+          readinessProbe:
+            {{- toYaml .customReadinessProbe | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data-volume
+              mountPath: /data
+            - name: config-volume
+              mountPath: /data/config.yaml
+              subPath: config.yaml
+              readOnly: true
+        {{- with .sidecars }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      volumes:
+        - name: data-volume
+          emptyDir: {}
+        - name: config-volume
+          configMap:
+            name: {{ default (printf "%s-config" (include "common.fullname" $ )) $.Values.config.existingConfigMap }}
+            items:
+              - key: config.yaml
+                path: config.yaml
+        - name: private-key-volume
+          secret:
+            secretName: {{ $.Values.config.key.secretName }}
+            optional: false
+{{- end }}
+{{- end }}
