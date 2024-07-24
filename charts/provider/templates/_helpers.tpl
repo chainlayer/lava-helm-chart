@@ -37,7 +37,6 @@ Create a default namespace
 {{- default .Release.Namespace .Values.namespaceOverride }}
 {{- end }}
 
-
 {{/*
 Common labels
 */}}
@@ -78,9 +77,9 @@ Use image with digest or tag
 {{- end -}}
 
 {{/*
-Provider config
+Provider ConfigMap values
 */}}
-{{- define "provider-config.name" -}}
+{{- define "config-map.name" -}}
 {{- if and .Values.config.existingConfigMap.enabled .Values.config.existingConfigMap.name }}
 {{- .Values.config.existingConfigMap.name }}
 {{- else }}
@@ -88,7 +87,7 @@ Provider config
 {{- end }}
 {{- end -}}
 
-{{- define "provider-config.path" -}}
+{{- define "config-map.path" -}}
 {{- if and .Values.config.existingConfigMap.enabled .Values.config.existingConfigMap.path }}
 {{- if contains ".yaml" .Values.config.existingConfigMap.path }}
 {{- .Values.config.existingConfigMap.path }}
@@ -100,7 +99,7 @@ Provider config
 {{- end }}
 {{- end -}}
 
-{{- define "provider-config.key" -}}
+{{- define "config-map.key" -}}
 {{- if and .Values.config.existingConfigMap.enabled .Values.config.existingConfigMap.key }}
 {{- .Values.config.existingConfigMap.key }}
 {{- else }}
