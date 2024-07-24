@@ -96,8 +96,8 @@ spec:
             echo $KEY_PASSWORD | lavap keys \
               import {{ default .moniker .key.name }} /tmp/keyfile/{{ .key.secretKey }} \
               --keyring-backend "test" \
-              --home /data \
-              --keyring-dir /data
+              --home {{ $.Values.persistence.mountPath }} \
+              --keyring-dir {{ $.Values.persistence.mountPath }}
 
             echo "Key imported successfully."
           volumeMounts:
@@ -172,11 +172,11 @@ spec:
             - "--from"
             - "{{ default .moniker .key.name }}"
             - "--home"
-            - "/data"
+            - "{{ $.Values.persistence.mountPath }}"
             - "--keyring-backend"
             - "test"
             - "--keyring-dir"
-            - "/data"
+            - "{{ $.Values.persistence.mountPath }}"
             - "--geolocation"
             - "{{ .geolocation }}"
             - "--node"
@@ -242,11 +242,11 @@ spec:
                 - "--from"
                 - "{{ default .moniker .key.name }}"
                 - "--home"
-                - "/data"
+                - "{{ $.Values.persistence.mountPath }}"
                 - "--keyring-backend"
                 - "test"
                 - "--keyring-dir"
-                - "/data"
+                - "{{ $.Values.persistence.mountPath }}"
                 - "--node"
                 - "{{ .rpcNodeUrl }}"
                 - "--endpoints"
@@ -259,7 +259,7 @@ spec:
           {{- end }}
           volumeMounts:
             - name: data-volume
-              mountPath: /data
+              mountPath: {{ $.Values.persistence.mountPath }}
             - name: config-volume
               mountPath: /data/config.yaml
               subPath: config.yaml
@@ -278,8 +278,8 @@ spec:
           secret:
             secretName: {{ $.Values.config.key.secretName }}
             optional: false
+  {{- with $.Values.persistence }}{{- if not .existingClaim }}
   volumeClaimTemplates:
-    {{- with $.Values.persistence }}
     - metadata:
         name: data-volume
         namespace: {{ include "common.namespace" $ }}
@@ -290,6 +290,9 @@ spec:
         labels: {{- toYaml . | nindent 8 }}
         {{- end }}
       spec:
+        {{- with .dataSource }}
+        dataSource: {{ . }}
+        {{- end }}
         accessModes:
         {{- range .accessModes }}
         - {{ . }}
@@ -304,6 +307,6 @@ spec:
         {{- with .storageClass }}
         storageClassName: {{ . }}
         {{- end }}
-    {{- end }}
+  {{- end }}{{- end }}
 {{- end }}
 {{- end }}
