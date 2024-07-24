@@ -429,6 +429,7 @@ metrics:
     name: metrics
     # -- Metrics service port number
     number: 2205
+
   serviceMonitor:
     # -- Enable a Prometheus ServiceMonitor
     enabled: false
@@ -438,9 +439,9 @@ metrics:
     labels: {}
     # -- Additional annotations to apply to the ServiceMonitor
     annotations: {}
-    # -- Job label to apply to metrics
+    # -- Service label for use in assembling a job name of the form <label value>-<port>. If no label is specified, the service name is used
     jobLabel: ""
-    # -- Merge the labels from the target into the scrape endpoint
+    # -- Keep labels from scraped data, overriding server-side labels
     honorLabels: false
     # -- Define the interval at which metrics are scraped
     interval: ""
@@ -448,13 +449,13 @@ metrics:
     scrapeTimeout: ""
     # -- The path for the metrics service
     path: "/metrics"
-    # -- Prometheus [MetricRelabelConfigs] to apply to samples before ingestion
+    # -- MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
     metricRelabelings: []
-    # -- Prometheus [RelabelConfigs] to apply to samples before scraping
+    # -- RelabelConfigs to apply to samples before scraping
     relabelings: []
-    # -- Specify selector(s) to target Prometheus instances
+    # -- Label selector for services to which this ServiceMonitor applies
     selector: {}
-      # prometheus: kube-prometheus
+      # label: value
 
   rules:
     # -- Deploy a PrometheusRule for the application controller
