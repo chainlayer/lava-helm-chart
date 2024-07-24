@@ -1,59 +1,68 @@
+## Lava Provider Configuration
+## Ref: https://github.com/chainlayer/lava-helm-chart
+##
+
+# -- Provide a name in place of `lava-provider`
 nameOverride: ""
+# -- String to fully override `"common.fullname"`
 fullnameOverride: ""
 
-## Configuration for the Lava Provider
+# -- Configuration for the Lava Provider
 ## Ref: https://docs.lavanet.xyz/provider-setup
 config:
-  # Manage the provider with lavavisor
+  # -- Manage the provider with lavavisor
+  ## Ref: https://docs.lavanet.xyz/lavavisor
   lavavisor: false
-  # The log level of the provider
+  # -- The log level of the provider
   logLevel: info
-  # REQUIRED: The moniker of the provider
+  # -- The moniker of the provider
   moniker: test
-  # REQUIRED: The public endpoint of the provider
+  # -- The public endpoint of the provider
   endpoint: ""
-  # REQUIRED: The chain ID of the provider
+  # -- The chain ID for the provider
   chainId: ""
-  # REQUIRED: The RPC node URL of the provider
+  # -- The node URL of a Lava node
   rpcNodeUrl: ""
 
-  ## A secret containing the private key and password for the provider
-  ## Ref: https://github.com/chainlayer/lava-helm-chart/blob/main/README.md#private-key-configuration
+  # -- Configure the private key and password for the provider
+  ## Ref: https://docs.lavanet.xyz/wallet#cli
   key:
-    # The name of the account that is being imported from the private key
+    # -- The name of the account that is being imported from the private key
     name: ""
-    # REQUIRED: The name of the secret containing the private key
-    # Example: secretName: "my-secret "
+    # -- The name of the secret containing the private key
     secretName: ""
-    # REQUIRED: The key in the secret containing the private key
+    # -- The key in the secret containing the private key
     secretKey: ""
-    # REQUIRED: The name of the secret containing the private key password
+    # -- The name of the secret containing the private key password
     passwordSecretName: ""
-    # REQUIRED: The key in the secret containing the private key password
+    # -- The key in the secret containing the private key password
     passwordSecretKey: ""
 
-  # Use the cache service to improve performance
-  # Requires the cache service to be deployed separetly
   cache:
-    # Use the cache service
+    # -- Use a cache service for the provider
+    ## Requires the cache service to be deployed separately
+    ## Ref: https://docs.lavanet.xyz/provider-features#caching
     enabled: false
-    # The endpoint of the cache service
+    # -- The endpoint of the cache service
     endpoint: ""
 
-  # Additional flags to pass to the provider process.
+  # -- Additional flags to pass to the provider process.
+  ## Use the `lavap --help` command to see all available flags
   flags: {}
     # parallel-connections: 10
     # polling-multiplier: 1.5
 
-  # REQUIRED: The geolocation of the provider.
+  # -- The geolocation of the provider
+  ## Ref: https://docs.lavanet.xyz/provider-setup#geolocation
   geolocation: ""
 
-  # REQUIRED: A list of supported chain IDs.
-  # This list must match what is provided in the configuration file for the provider service.
+  # -- A list of supported chain IDs
+  ## This list must match what is provided in the configuration file for the provider service
+  ## Ref: https://docs.lavanet.xyz/provider-setup/#configuration-examples
   supportedChainIds: []
     # - LAV1
 
-  # The backend configration for the provider service.
+  # -- The backend configration for the provider service
   configYaml: {}
     # endpoints:
     #   - api-interface: tendermintrpc
@@ -64,7 +73,6 @@ config:
     #     node-urls:
     #       - url: http://lava-rpc.mydomain.com:26657
     #       - url: ws://lava-rpc.mydomain.com:26657/websocket
-
     #   - api-interface: rest
     #     chain-id: LAV1
     #     network-address:
@@ -72,7 +80,6 @@ config:
     #       disable-tls: true
     #     node-urls:
     #       - url: http://lava-rpc.mydomain.com:1317
-
     #   - api-interface: grpc
     #     chain-id: LAV1
     #     network-address:
@@ -81,38 +88,50 @@ config:
     #     node-urls:
     #       - url: lava-rpc.mydomain.com:9090
 
-  # Alternative to providing the configuration in the `configYaml` field
-  existingConfigMap: ""
+  existingConfigMap:
+    # -- Use an existing ConfigMap for the provider configuration
+    enabled: false
+    # -- The name of the existing ConfigMap
+    name: ""
+    # -- The key in the ConfigMap containing the configuration
+    key: ""
+    # -- The path to mount the configuration file to. If specified, it must end with ".yaml"
+    path: ""
 
-  # Load additional environment variables from a secret or configmap
-  envFrom: []
-
-  # Add additional environment variables to the deployment
+  # -- Environment variables to pass to the provider process
   env: []
 
-# Configuration for the Lava Provider instance
+  # -- Load additional environment variables from a secret or configmap
+  envFrom: []
+
+# -- Configuration for the Lava provider instance
 provider:
   image:
-    # REQUIRED: The image repository to pull from
+    # -- The repository of the image to pull
     repository: ""
-    # REQUIRED: The image tag or digest to pull
+    # -- The tag of the image to pull
     tag: ""
+    # -- The digest of the image to pull. Takes precedence over the tag
     digest: ""
+    # -- The pull policy for the image. One of Always, Never, IfNotPresent
     pullPolicy: IfNotPresent
+    # -- List of secrets to use for pulling images from private registries. Requires .serviceAccount.enabled to be true
+    ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
     pullSecrets: []
 
-  # The number of replicas to deploy. This value is only used if autoscaling is disabled.
+  # -- The number of replicas to deploy. This value is only used if autoscaling is disabled
+  ## Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#scaling
   replicaCount: 1
 
-  # The port used for the provider service. This should match the endpoint specified in the provider config.
+  # -- The port used for the container
   containerPort:
     name: provider
     number: 2204
 
-  ## Probes for ApplicationSet controller (optional)
+  # -- Probe configuration for the pods
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
   readinessProbe:
-    # -- Enable Kubernetes liveness probe for ApplicationSet controller
+    # -- Enable Kubernetes liveness probe for the pods
     enabled: true
     # -- Number of seconds after the container has started before [probe] is initiated
     initialDelaySeconds: 30
@@ -126,7 +145,7 @@ provider:
     failureThreshold: 10
 
   livenessProbe:
-    # -- Enable Kubernetes liveness probe for ApplicationSet controller
+    # -- Enable Kubernetes liveness probe for the pods
     enabled: true
     # -- Number of seconds after the container has started before [probe] is initiated
     initialDelaySeconds: 60
@@ -139,21 +158,24 @@ provider:
     # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
     failureThreshold: 20
 
-  # Custom liveness probe configuration
+  # -- Custom liveness probe configuration
   customLivenessProbe: {}
 
-  # Custom readiness probe configuration
+  # -- Custom readiness probe configuration
   customReadinessProbe: {}
 
-  # Resource limits and requests
+  # -- Resource limits and requests for the pods
+  ## Ref: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
   resources:
     requests:
       cpu: 500m
-      memory: 128Mi
+      memory: 512Mi
     limits:
       cpu: 1500m
-      memory: 512Mi
+      memory: 2Gi
 
+  # -- Configure the pod security context
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
   podSecurityContext:
     enabled: false
     # runAsUser: 1000
@@ -161,6 +183,8 @@ provider:
     # fsGroup: 1000
     # runAsNonRoot: true
 
+  # -- Configure the security context for the container
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/#set-the-security-context-for-a-container
   containerSecurityContext:
     enabled: false
     # seLinuxOptions: {}
@@ -175,23 +199,24 @@ provider:
     # seccompProfile:
     #   type: "RuntimeDefault"
 
-  # Extra labels to be added to the deployments.
+  # -- Additional labels to be applied to the Deployment or StatefulSet
   deploymentLabels: {}
     # my-deployment-label: value
 
-  # Extra annotations to be added to the deployments.
+  # -- Additional annotations to be applied to the Deployment or StatefulSet
   deploymentAnnotations: {}
     # my-deployment-annotation: value
 
-  # Extra labels to be added to the pods.
+  # -- Additional labels to be applied to the pods
   podLabels: {}
     # my-pod-label: value
 
-  # Extra annotations to be added to the pods.
+  # -- Additional annotations to be applied to the pods
   podAnnotations: {}
     # my-pod-annotation: value
 
-  # Configure affinity for the deployment.
+  # -- Specify constraints to limit the nodes the pods can be scheduled on
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
   affinity: {}
     # requiredDuringSchedulingIgnoredDuringExecution:
     #   nodeSelectorTerms:
@@ -210,30 +235,38 @@ provider:
     #       values:
     #       - another-node-label-value
 
-  # Schedule the deployment on a specific node or node type using selectors.
+  # -- Schedule the pods on specific nodes
+  ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/assign-pods-nodes/
   nodeSelector: {}
     # kubernetes.io/zone: eu-central
 
+  # -- [Tolerations] for use with node taints
+  ## Ref: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
   tolerations: []
     # - key: "kubernetes.io/nodeType"
     #   operator: "Equal"
     #   value: "gpu"
     #   effect: "NoSchedule"
 
-  # The update strategy for the deployment.
+  # -- Specify the strategy used to replace old pods by new ones
+  ## Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
       maxSurge: 25%
       maxUnavailable: 5%
 
-  # Only used when persistence is enabled and deployment is managed with a Statefulset.
+  # -- Define the pod management policy for the StatefulSet
+  ## Requires persistence.enabled: true
+  ## Ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#deployment-and-scaling-guarantees
   podManagementPolicy: OrderedReady
 
-  # Set the priority class for the pods managed by the deployment.
+  # -- Configure the priority class for the pods
+  # Ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
   priorityClassName: ""
 
-  # Set custom topology spread constraints.
+  # -- Assign custom [TopologySpreadConstraints] rules to the pods
+  # Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/
   topologySpreadConstraints: []
     # - maxSkew: 1
     #   topologyKey: kubernetes.io/hostname
@@ -244,191 +277,205 @@ provider:
     #   matchLabelKeys:
     #     - pod-template-hash
 
-  # Additional init containers to be included in the deployed pods.
+  # -- Additional init containers to be added to the deployed pods
   initContainers: []
 
-  # Additional sidecar containers to be included in the deployed pods.
+  # -- Additional sidecar containers to be added to the deployed pods
   sidecars: []
 
-  # Enable a Pod Disruption Budget for the deployment.
-  # Note that if you run with a single replica, using a pdb will effectively
-  # restrict your ability to drain the node the deployment is running on.
+  # -- Configure a pod disruption budget for the pods
+  ## Ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
   pdb:
-    # Enable the Pod Disruption Budget
+    # -- Create a [PodDisruptionBudget] for the application controller
     enabled: false
-    # The minimum number of pods that must be available
+    # -- Number of pods that are available after eviction as number (eg.: 1) or percentage (eg.: 50%)
     minAvailable: 1
-    # The maximum number of pods that can be unavailable
+    # -- Number of pods that are unavailable after eviction as number or percentage (eg.: 50%)
     maxUnavailable: 3
 
-  # Autoscaling configuration
+  # -- Autoscaling configuration for the pods
+  ## Vertical Pod Autoscaler (VPA) and Horizontal Pod Autoscaler (HPA) should not be enabled at the same time with the same resource
   autoscaling:
-    # Vertical Pod Autoscaler (scale resources)
-    # Should not be used with the Horizontal Pod Autoscaler (HPA) on the same resource metric (CPU or memory)
     vpa:
-      # Enable the Vertical Pod Autoscaler
+      # -- Enable a Vertical Pod Autoscaler
+      ## Ref: https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler
       enabled: false
-      # Annotations to add to the VPA
+      # -- Additional annotations to apply to the VPA
       annotations: {}
-      # List of resources to control
+      # -- Resources to be controlled by the VPA
       controlledResources: []
-      # Settings for the VPA
+      # -- The minimum number of replicas
       minAllowed: 1
+      # -- The maximum number of replicas
       maxAllowed: 3
-      # Policy for updating the VPA
+      # -- Update policy for the VPA
       updatePolicy:
         updateMode: Auto
 
-    # Horizontal Pod Autoscaler (scale pods)
     hpa:
-      # Enable the Horizontal Pod Autoscaler
+      # -- Enable a Horizontal Pod Autoscaler
+      ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
       enabled: false
-      # Annotations to add to the HPA
+      # -- Additional annotations to apply to the HPA
       annotations: {}
-      # The minimum number of replicas
+      # -- The minimum number of replicas
       minReplicas: 1
-      # The maximum number of replicas
+      # -- The maximum number of replicas
       maxReplicas: 5
-      # Metrics to use for scaling
+      # -- The target CPU or Memory utilization percentage
       targetCPU: "70"
       targetMemory: "70"
+      # -- Custom metrics to use for scaling
+      customTargets: []
+        # - name: "my-metric"
+        #   type: "Object"
+        #   object:
+        #     metricName: "my-metric"
+        #     target: "50"
 
-# Service configuration
 service:
-  # Expose the deployment via a service
+  # -- Enable a service resource for the pods
   enabled: true
-  # Name override for the service
+  # -- The service name override. If not set, the name is generated using the fullname template
   nameOverride: ""
-  # The type of service to create
+  # -- The type of service to create
   type: ClusterIP
-  # The port used for the service
+  # -- The port used for the service
   port:
-    # The name of the port
+    # -- The port name
     name: service
-    # The port number
+    # -- The port number
     number: 2204
-  # Specify the IP to use when type is ClusterIP
+  # -- ClusterIP will get created with the IP specified in this field
   clusterIP: ""
-  # Specify the external IP to use when type is LoadBalancer
+  # -- LoadBalancer will get created with the IP specified in this field
   loadBalancerIP: ""
-  # Specify source ranges for the load balancer
+  # -- Source IP ranges to allow access to service from
   loadBalancerSourceRanges: []
-  # The external traffic policy for the service
+  # -- Denotes if this Service desires to route external traffic to node-local or cluster-wide endpoints
   externalTrafficPolicy: Cluster
-  # Annotations to add to the service
+  # -- Additional annotations to apply to the service
   annotations: {}
-  # The session affinity for the service
+  # -- Used to maintain session affinity. Supports `ClientIP` and `None`
   sessionAffinity: None
-  # The session affinity config for the service
+  # -- Additional session affinity configuration
   sessionAffinityConfig: {}
+    # sessionAffinityConfig:
+    # clientIP:
+    #   timeoutSeconds: 600
 
-# Ingress configuration
 ingress:
-  # Enable ingress
+  # -- Enable an ingress resource for the pods
   enabled: false
-  # The class of the ingress controller
+  # -- Define which ingress class will implement the ingress
   className: ""
-  # Annotations to add to the ingress
+  # -- Additional annotations to apply to the ingress
   annotations: {}
     # cert-manager.io/cluster-issuer: letsencrypt-prod
     # nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
-  # Hosts to add to the ingress
+  # -- A list of hostnames to be covered by ingress record
   hosts: []
     # - host: provider.mydomain.com
     #   paths:
     #     - path: /
     #       pathType: ImplementationSpecific
-  # TLS configuration
+  # -- Configure TLS for the ingress with secrets
   tls: []
   #  - secretName: provider-mydomain-com-tls
   #    hosts:
   #      - provider.mydomain.com
 
-# Storage configuration
 persistence:
-  # Enable persistence using PVC
+  # -- Create a PVC for the pods
   enabled: false
-  # The name of the PVC to use
+  # -- The path to mount the volume to
   mountPath: /data
-  # The subpath to mount the volume at
+  # -- The sub path to mount the volume to
   subPath: ""
-  # Annotations to add to the PVC
+  # -- Additional annotations to apply to the PVC
   annotations: {}
-  # The storage class to use
+  # -- The storage class to use
   storageClass: ""
-  # The accessmodes for the PVC
+  # -- Access mode for the PVC
   accessModes:
     - ReadWriteOnce
-  # The size of the PVC
+  # -- The storage claim size for the PVC
   size: ""
-  # The name of an existing PVC to use
+  # -- The name of an existing PVC to use
+  # When set, a new PVC is not created
   existingClaim: ""
-  # Selectors for the PVC
+  # -- Selector applied to the PVC
   selector: {}
-  # The data source for the PVC
+  # -- Define the volume snapshot or existing PVC to restore from
   dataSource: {}
+    # kind: PersistentVolumeClaim
+    # name: my-pvc
 
-# Service Account configuration
 serviceAccount:
-  # Specifies whether a service account should be created
+  # -- Create a service account for the pods
   enabled: true
-  # Name override for the service account
+  # -- Service account name override. If not set, the name is generated using the fullname template
   nameOverride: ""
-  # The annotations to add to the service account
+  # -- Additional annotations to apply to created service account
   annotations: {}
-  # Automount the service account token
+  # -- Automount credentials for the service account into the pod.
   automountServiceAccountToken: true
 
-# Metrics configuration
 metrics:
-  # Enable prometheus metrics
+  # -- Enable and expose metrics
   enabled: false
-  # The port to be used for the metrics service
   port:
-    # The name of the port
+    # -- Metrics service port name
     name: metrics
-    # The port number
+    # -- Metrics service port number
     number: 2205
-  # Enable prometheus scraping
   serviceMonitor:
-    # Whether to enable the service monitor
+    # -- Enable a Prometheus ServiceMonitor
     enabled: false
-    # The namespace to deploy the service monitor
-    namespace: ""
-    # Labels to add to the service monitor
+    # -- The namespace to deploy the ServiceMonitor. If not set, the namespace of the release is used
+    namespace: "" # "monitoring"
+    # -- Additional labels to apply to the ServiceMonitor
     labels: {}
-    # Annotations to add to the service monitor
+    # -- Additional annotations to apply to the ServiceMonitor
     annotations: {}
-    # The job label to add to the service monitor
+    # -- Job label to apply to metrics
     jobLabel: ""
-    # Whether to honor the labels
+    # -- Merge the labels from the target into the scrape endpoint
     honorLabels: false
-    # The interval at which to scrape the metrics
+    # -- Define the interval at which metrics are scraped
     interval: ""
-    # Scrape timeout for the metrics (i.e 10s)
+    # -- Define how long to wait before considering a scrape request as failed
     scrapeTimeout: ""
-    # The path to scrape the metrics from
+    # -- The path for the metrics service
     path: "/metrics"
-    # Metric relabelings to apply to the metrics
+    # -- Prometheus [MetricRelabelConfigs] to apply to samples before ingestion
     metricRelabelings: []
-    # Relabelings to apply to the metrics
+    # -- Prometheus [RelabelConfigs] to apply to samples before scraping
     relabelings: []
-    # Selector to match the service monitor
+    # -- Specify selector(s) to target Prometheus instances
     selector: {}
+      # prometheus: kube-prometheus
 
-  # Add prometheus rules to the deployment.
-  prometheusRules:
-    # Whether to enable the prometheus rules
+  rules:
+    # -- Deploy a PrometheusRule for the application controller
     enabled: false
-    # A list of prometheus rules to add to the deployment.
-    # Refer to the Prometheus documentation for more information on how to write rules.
-    rules:
-      - name: "LavaProviderAlerts"
-        rules:
-          - alert: "LavaProviderStoppedRelaying"
-            expr: "sum(increase(lava_provider_total_relays_serviced[10m])) by(spec) == 0"
-            for: "5m"
-            labels:
-              severity: "critical"
-            annotations:
-              description: "{{ $labels.spec }} has not serviced any relays for the past 15 minutes"
+    # -- Specify the namespace to deploy the PrometheusRule. If not set, the namespace of the release is used
+    namespace: ""
+    # -- Specify selector(s) to target Prometheus instances
+    selector: {}
+      # prometheus: kube-prometheus
+    # -- Additional labels to apply to the PrometheusRule
+    labels: {}
+    # -- Additional annotations to apply to the PrometheusRule
+    annotations: {}
+    # -- Define the rules to be applied
+    spec: []
+      # - name: "LavaProviderAlerts"
+      #   rules:
+      #     - alert: "LavaProviderStoppedRelaying"
+      #       expr: "sum(increase(lava_provider_total_relays_serviced[10m])) by(spec) == 0"
+      #       for: "5m"
+      #       labels:
+      #         severity: "critical"
+      #       annotations:
+      #         description: "{{ $labels.spec }} has not serviced any relays for the past 15 minutes"

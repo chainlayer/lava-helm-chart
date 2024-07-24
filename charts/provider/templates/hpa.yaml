@@ -40,4 +40,9 @@ spec:
           averageUtilization: {{ . }}
     {{- end }}
   {{- end }}
+  {{- with .customTargets }}
+  {{- range . }}
+  {{ toYaml . | nindent 2 }}
+  {{- end }}
+  {{- end }}
 {{- end }}{{- end }}
