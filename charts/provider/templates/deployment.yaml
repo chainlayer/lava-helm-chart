@@ -255,7 +255,7 @@ spec:
               mountPath: /data
             - name: config-volume
               mountPath: /data/{{ include "provider-config.path" $ }}
-              path: {{ include "provider-config.path" $ }}
+              subPath: {{ include "provider-config.path" $ }}
               readOnly: true
         {{- with .sidecars }}
         {{- toYaml . | nindent 8 }}
