@@ -250,11 +250,11 @@ provider:
 
   # -- Specify the strategy used to replace old pods by new ones
   ## Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
-  updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 5%
+  updateStrategy: {}
+    # type: RollingUpdate
+    # rollingUpdate:
+    #   maxSurge: 25%
+    #   maxUnavailable: 5%
 
   # -- Define the pod management policy for the StatefulSet
   ## Requires persistence.enabled: true
