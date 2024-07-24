@@ -12,14 +12,14 @@ metadata:
 spec:
   resourcePolicy:
     containerPolicies:
-    - containerName: deployment
+    - containerName: "*"
       controlledResources:
         {{- toYaml .controlledResources | nindent 8 }}
       maxAllowed: {{ .maxAllowed }}
       minAllowed: {{ .minAllowed }}
   targetRef:
     apiVersion: apps/v1
-    kind: Deployment
+    kind: {{ if $.Values.persistence.enabled }}StatefulSet{{ else }}Deployment{{ end }}
     name: {{ include "common.fullname" $ }}
   {{- if .updatePolicy }}
   updatePolicy:
