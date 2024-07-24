@@ -279,19 +279,26 @@ provider:
       updatePolicy:
         updateMode: Auto
 
-    # Horizontal Pod Autoscaler (scale pods)
     hpa:
-      # Enable the Horizontal Pod Autoscaler
+      # -- Enable a Horizontal Pod Autoscaler
+      ## Ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
       enabled: false
-      # Annotations to add to the HPA
+      # -- Additional annotations to apply to the HPA
       annotations: {}
-      # The minimum number of replicas
+      # -- The minimum number of replicas
       minReplicas: 1
-      # The maximum number of replicas
+      # -- The maximum number of replicas
       maxReplicas: 5
-      # Metrics to use for scaling
+      # -- The target CPU or Memory utilization percentage
       targetCPU: "70"
       targetMemory: "70"
+      # -- Custom metrics to use for scaling
+      customTargets: []
+        # - name: "my-metric"
+        #   type: "Object"
+        #   object:
+        #     metricName: "my-metric"
+        #     target: "50"
 
 # Service configuration
 service:
