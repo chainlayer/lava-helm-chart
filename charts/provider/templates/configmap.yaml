@@ -9,6 +9,6 @@ metadata:
   labels:
     {{- include "common.labels" $ | nindent 4 }}
 data:
-  config.yaml: |
+  {{ include "provider-config.key" $ }}: |
     {{- toYaml .configYaml | nindent 4 }}
 {{ end }}{{ end }}
