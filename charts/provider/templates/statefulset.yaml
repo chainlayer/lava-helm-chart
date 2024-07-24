@@ -262,7 +262,7 @@ spec:
               mountPath: {{ $.Values.persistence.mountPath }}
             - name: config-volume
               mountPath: {{ $.Values.persistence.mountPath }}/{{ include "provider-config.path" $ }}
-              path: {{ include "provider-config.path" $ }}
+              subPath: {{ include "provider-config.path" $ }}
               readOnly: true
         {{- with .sidecars }}
         {{- toYaml . | nindent 8 }}
