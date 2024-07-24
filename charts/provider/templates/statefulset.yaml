@@ -1,6 +1,7 @@
-{{- with .Values.persistence }}{{- if .enabled}}
+{{- if .Values.persistence.enabled }}
+{{- with .Values.persistence }}
 {{- $validation := required "[VALITATION] Missing required value for persistence: 'size'" .size }}
-{{- end }}{{- end }}
+{{- end }}
 {{- with .Values.config }}
 {{- $validation := required "[VALITATION] Missing one or more required values: 'endpoint', 'supportedChainIds', 'rpcNodeUrl', 'secretName, 'secretKey', 'passwordSecretName', passwordSecretKey" (and .endpoint .supportedChainIds .rpcNodeUrl .key.secretName .key.secretKey .key.passwordSecretName .key.passwordSecretKey) }}
 {{- end }}
@@ -304,4 +305,5 @@ spec:
         storageClassName: {{ . }}
         {{- end }}
     {{- end }}
+{{- end }}
 {{- end }}
