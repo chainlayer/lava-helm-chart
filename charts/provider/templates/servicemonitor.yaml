@@ -1,0 +1,48 @@
+{{- with .Values.metrics.serviceMonitor }}{{- if .enabled }}
+{{- $validation := required "[VALIDATION] Missing required value for ServiceMonitor: 'metrics.port.name'" $.Values.metrics.port.name }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "common.fullname" $ }}
+  namespace: {{ default (include "common.namespace" $ ) .namespace }}
+  labels: {{- include "common.labels" $ | nindent 4 }}
+    {{- with .labels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+  {{- with .annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  {{- with .jobLabel }}
+  jobLabel: {{ . }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "common.matchLabels" $ | nindent 6 }}
+      {{- with .selector }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+  namespaceSelector:
+    matchNames:
+    - {{ include "common.namespace" $ }}
+  endpoints:
+    - port: {{ $.Values.metrics.port.name }}
+      {{- with .honorLabels }}
+      honorLabels: {{ . }}
+      {{- end }}
+      {{- with .interval }}
+      interval: {{ . }}
+      {{- end }}
+      path: {{ .path }}
+      {{- with .scrapeTimeout}}
+      scrapeTimeout: {{ . }}
+      {{- end}}
+      {{- with .metricRelabelings }}
+      metricRelabelings: {{ toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .relabelings }}
+      relabelings: {{ toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}{{- end }}
