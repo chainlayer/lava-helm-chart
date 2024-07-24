@@ -92,6 +92,12 @@ spec:
             # exit when any command fails
             set -e
 
+            # Check if the key is already imported by attempting to show it
+            if lavap keys show {{ default .moniker .key.name }} --keyring-backend "test" --home {{ $.Values.persistence.mountPath }} --keyring-dir {{ $.Values.persistence.mountPath }} >/dev/null 2>&1; then
+              echo "Key has already been imported, exiting..."
+              exit 0
+            fi
+
             # Import key into keyring
             echo $KEY_PASSWORD | lavap keys \
               import {{ default .moniker .key.name }} /tmp/keyfile/{{ .key.secretKey }} \
