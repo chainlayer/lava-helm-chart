@@ -81,11 +81,15 @@ config:
     #     node-urls:
     #       - url: lava-rpc.mydomain.com:9090
 
-  # Alternative to providing the configuration in the `configYaml` field
-  existingConfigMap: ""
-
-  # Load additional environment variables from a secret or configmap
-  envFrom: []
+  existingConfigMap:
+    # -- Use an existing ConfigMap for the provider configuration
+    enabled: false
+    # -- The name of the existing ConfigMap
+    name: ""
+    # -- The key in the ConfigMap containing the configuration
+    key: ""
+    # -- The path to mount the configuration file to. If specified, it must end with ".yaml"
+    path: ""
 
   # Add additional environment variables to the deployment
   env: []

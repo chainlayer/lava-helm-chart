@@ -76,3 +76,34 @@ Use image with digest or tag
 {{- printf "%s:%s" .Values.provider.image.repository .Values.provider.image.tag }}
 {{- end }}
 {{- end -}}
+
+{{/*
+Provider config
+*/}}
+{{- define "provider-config.name" -}}
+{{- if and .Values.config.existingConfigMap.enabled .Values.config.existingConfigMap.name }}
+{{- .Values.config.existingConfigMap.name }}
+{{- else }}
+{{- printf "%s-config" ( include "common.fullname" . ) }}
+{{- end }}
+{{- end -}}
+
+{{- define "provider-config.path" -}}
+{{- if and .Values.config.existingConfigMap.enabled .Values.config.existingConfigMap.path }}
+{{- if contains ".yaml" .Values.config.existingConfigMap.path }}
+{{- .Values.config.existingConfigMap.path }}
+{{- else }}
+{{- printf "%s.yaml" .Values.config.existingConfigMap.path }}
+{{- end -}}
+{{- else }}
+{{- "config.yaml" }}
+{{- end }}
+{{- end -}}
+
+{{- define "provider-config.key" -}}
+{{- if and .Values.config.existingConfigMap.enabled .Values.config.existingConfigMap.key }}
+{{- .Values.config.existingConfigMap.key }}
+{{- else }}
+{{- "config.yaml" }}
+{{- end }}
+{{- end -}}

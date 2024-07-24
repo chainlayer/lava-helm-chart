@@ -131,7 +131,7 @@ spec:
           command: ["lavap"]
           args:
             - "rpcprovider"
-            - "config.yaml"
+            - "{{ include "provider-config.path" $ }}"
             - "--from"
             - "{{ default .moniker .key.name }}"
             - "--home"
@@ -168,7 +168,7 @@ spec:
             - "--cmd"
             - "lavap"
             - "rpcprovider"
-            - "config.yaml"
+            - "{{ include "provider-config.path" $ }}"
             - "--from"
             - "{{ default .moniker .key.name }}"
             - "--home"
@@ -261,8 +261,8 @@ spec:
             - name: data-volume
               mountPath: {{ $.Values.persistence.mountPath }}
             - name: config-volume
-              mountPath: /data/config.yaml
-              subPath: config.yaml
+              mountPath: {{ $.Values.persistence.mountPath }}/{{ include "provider-config.path" $ }}
+              path: {{ include "provider-config.path" $ }}
               readOnly: true
         {{- with .sidecars }}
         {{- toYaml . | nindent 8 }}
@@ -270,10 +270,10 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: {{ default (printf "%s-config" (include "common.fullname" $ )) $.Values.config.existingConfigMap }}
+            name: {{ default (printf "%s-config" (include "common.fullname" $ )) $.Values.config.existingConfigMap.name }}
             items:
-              - key: config.yaml
-                path: config.yaml
+              - key: {{ default "config.yaml" $.Values.config.existingConfigMap.key }}
+                path: {{ include "provider-config.path" $ }}
         - name: private-key-volume
           secret:
             secretName: {{ $.Values.config.key.secretName }}
