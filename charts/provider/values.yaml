@@ -6,6 +6,8 @@
 nameOverride: ""
 # -- String to fully override `"common.fullname"`
 fullnameOverride: ""
+# -- Provide a namespace in place of release namespace
+namespaceOverride: ""
 
 # -- Configuration for the Lava Provider
 ## Ref: https://docs.lavanet.xyz/provider-setup
