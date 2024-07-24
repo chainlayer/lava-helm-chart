@@ -190,11 +190,11 @@ spec:
             {{- end }}
             {{- end }}
           {{- end }}{{- end }}
-          {{- with .env }}
+          {{- with $.Values.config.env }}
           env:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          {{- with .envFrom }}
+          {{- with $.Values.config.envFrom }}
           envFrom:
             {{- toYaml . | nindent 12 }}
           {{- end }}
