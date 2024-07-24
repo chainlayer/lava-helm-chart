@@ -423,19 +423,26 @@ metrics:
     # Selector to match the service monitor
     selector: {}
 
-  # Add prometheus rules to the deployment.
-  prometheusRules:
-    # Whether to enable the prometheus rules
+  rules:
+    # -- Deploy a PrometheusRule for the application controller
     enabled: false
-    # A list of prometheus rules to add to the deployment.
-    # Refer to the Prometheus documentation for more information on how to write rules.
-    rules:
-      - name: "LavaProviderAlerts"
-        rules:
-          - alert: "LavaProviderStoppedRelaying"
-            expr: "sum(increase(lava_provider_total_relays_serviced[10m])) by(spec) == 0"
-            for: "5m"
-            labels:
-              severity: "critical"
-            annotations:
-              description: "{{ $labels.spec }} has not serviced any relays for the past 15 minutes"
+    # -- Specify the namespace to deploy the PrometheusRule. If not set, the namespace of the release is used
+    namespace: ""
+    # -- Specify selector(s) to target Prometheus instances
+    selector: {}
+      # prometheus: kube-prometheus
+    # -- Additional labels to apply to the PrometheusRule
+    labels: {}
+    # -- Additional annotations to apply to the PrometheusRule
+    annotations: {}
+    # -- Define the rules to be applied
+    spec: []
+      # - name: "LavaProviderAlerts"
+      #   rules:
+      #     - alert: "LavaProviderStoppedRelaying"
+      #       expr: "sum(increase(lava_provider_total_relays_serviced[10m])) by(spec) == 0"
+      #       for: "5m"
+      #       labels:
+      #         severity: "critical"
+      #       annotations:
+      #         description: "{{ $labels.spec }} has not serviced any relays for the past 15 minutes"
