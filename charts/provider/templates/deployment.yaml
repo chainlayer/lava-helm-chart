@@ -143,8 +143,9 @@ spec:
             - "--metrics-listen-address"
             - "0.0.0.0:{{ .port.number }}"
             {{- end }}{{- end }}
-            {{- with .cache }}{{- if .enabled }}
-            "--cache-be", "{{ .endpoint }}"
+            {{- with .cache }}{{- if and .enabled .endpoint }}
+            - "--cache-be"
+            - "{{ .endpoint }}"
             {{- end }}{{- end }}
             {{- with .flags }}
             {{- range $key, $value := . }}
@@ -180,8 +181,9 @@ spec:
             - "--metrics-listen-address"
             - "0.0.0.0:{{ .port.number }}"
             {{- end }}{{- end }}
-            {{- with .cache }}{{- if .enabled }}
-            "--cache-be", "{{ .endpoint }}"
+            {{- with .cache }}{{- if and .enabled .endpoint }}
+            - "--cache-be"
+            - "{{ .endpoint }}"
             {{- end }}{{- end }}
             {{- with .flags }}
             {{- range $key, $value := . }}
