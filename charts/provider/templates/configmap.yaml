@@ -8,6 +8,6 @@ metadata:
   labels:
     {{- include "common.labels" $ | nindent 4 }}
 data:
-  {{ include "config-map.key" $ }}:
+  {{ include "config-map.key" $ }}: |
     {{- .configYaml | nindent 4 }}
 {{ end }}{{ end }}
