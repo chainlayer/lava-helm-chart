@@ -249,7 +249,7 @@ spec:
                 - "--node"
                 - "{{ .rpcNodeUrl }}"
                 - "--endpoints"
-                - {{ range .supportedChainIds }}"{{ $.Values.config.endpoint }}:443,{{ . }} "{{ end }}
+                - "{{ range .supportedChainIds }}{{ $.Values.config.endpoint }}:443,{{ . }} {{ end }}"
               {{- end }}
             {{- omit .readinessProbe "enabled" | toYaml | nindent 12 }}
           {{- else if .customReadinessProbe }}
