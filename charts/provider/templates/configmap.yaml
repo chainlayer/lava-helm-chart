@@ -1,4 +1,4 @@
-{{- with .Values.config }}{{- if not .existingConfigMap }}
+{{- with .Values.config }}{{- if not .existingConfigMap.enabled }}
 {{- $validation := required "[VALIDATION] Missing required value(s): 'configYaml', '.configYaml.endpoints'" (and .configYaml .configYaml.endpoints) }}
 ---
 apiVersion: v1
