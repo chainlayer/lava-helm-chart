@@ -6,6 +6,8 @@
 nameOverride: ""
 # -- String to fully override `"common.fullname"`
 fullnameOverride: ""
+# -- Provide a namespace in place of release namespace
+namespaceOverride: ""
 
 # -- Configuration for the Lava Provider
 ## Ref: https://docs.lavanet.xyz/provider-setup
@@ -250,11 +252,11 @@ provider:
 
   # -- Specify the strategy used to replace old pods by new ones
   ## Ref: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy
-  updateStrategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 5%
+  updateStrategy: {}
+    # type: RollingUpdate
+    # rollingUpdate:
+    #   maxSurge: 25%
+    #   maxUnavailable: 5%
 
   # -- Define the pod management policy for the StatefulSet
   ## Requires persistence.enabled: true
@@ -429,6 +431,7 @@ metrics:
     name: metrics
     # -- Metrics service port number
     number: 2205
+
   serviceMonitor:
     # -- Enable a Prometheus ServiceMonitor
     enabled: false
@@ -438,9 +441,9 @@ metrics:
     labels: {}
     # -- Additional annotations to apply to the ServiceMonitor
     annotations: {}
-    # -- Job label to apply to metrics
+    # -- Service label for use in assembling a job name of the form <label value>-<port>. If no label is specified, the service name is used
     jobLabel: ""
-    # -- Merge the labels from the target into the scrape endpoint
+    # -- Keep labels from scraped data, overriding server-side labels
     honorLabels: false
     # -- Define the interval at which metrics are scraped
     interval: ""
@@ -448,13 +451,13 @@ metrics:
     scrapeTimeout: ""
     # -- The path for the metrics service
     path: "/metrics"
-    # -- Prometheus [MetricRelabelConfigs] to apply to samples before ingestion
+    # -- MetricRelabelConfigs to apply to samples after scraping, but before ingestion.
     metricRelabelings: []
-    # -- Prometheus [RelabelConfigs] to apply to samples before scraping
+    # -- RelabelConfigs to apply to samples before scraping
     relabelings: []
-    # -- Specify selector(s) to target Prometheus instances
+    # -- Label selector for services to which this ServiceMonitor applies
     selector: {}
-      # prometheus: kube-prometheus
+      # label: value
 
   rules:
     # -- Deploy a PrometheusRule for the application controller

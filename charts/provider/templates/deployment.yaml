@@ -83,6 +83,12 @@ spec:
             # exit when any command fails
             set -e
 
+            # Check if the key is already imported by attempting to show it
+            if lavap keys show {{ default .moniker .key.name }} --keyring-backend "test" --home /data --keyring-dir /data >/dev/null 2>&1; then
+              echo "Key has already been imported, exiting..."
+              exit 0
+            fi
+
             # Import key into keyring
             echo $KEY_PASSWORD | lavap keys \
               import {{ default .moniker .key.name }} /tmp/keyfile/{{ .key.secretKey }} \
@@ -109,7 +115,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       containers:
-        - name: {{ include "common.fullname" $ }}
+        - name: "provider"
           {{- if .containerSecurityContext.enabled }}
           securityContext:
             {{- omit .containerSecurityContext "enabled" | toYaml | nindent 12 }}
@@ -122,7 +128,7 @@ spec:
           command: ["lavap"]
           args:
             - "rpcprovider"
-            - "{{ include "provider-config.path" $ }}"
+            - "{{ include "config-map.path" $ }}"
             - "--from"
             - "{{ default .moniker .key.name }}"
             - "--home"
@@ -160,7 +166,7 @@ spec:
             - "--cmd"
             - "lavap"
             - "rpcprovider"
-            - "{{ include "provider-config.path" $ }}"
+            - "{{ include "config-map.path" $ }}"
             - "--from"
             - "{{ default .moniker .key.name }}"
             - "--home"
@@ -254,8 +260,8 @@ spec:
             - name: data-volume
               mountPath: /data
             - name: config-volume
-              mountPath: /data/{{ include "provider-config.path" $ }}
-              subPath: {{ include "provider-config.path" $ }}
+              mountPath: /data/{{ include "config-map.path" $ }}
+              subPath: {{ include "config-map.path" $ }}
               readOnly: true
         {{- with .sidecars }}
         {{- toYaml . | nindent 8 }}
@@ -265,10 +271,10 @@ spec:
           emptyDir: {}
         - name: config-volume
           configMap:
-            name: {{ include "provider-config.name" $ }}
+            name: {{ include "config-map.name" $ }}
             items:
-              - key: {{ include "provider-config.key" $ }}
-                path: {{ include "provider-config.path" $ }}
+              - key: {{ include "config-map.key" $ }}
+                path: {{ include "config-map.path" $ }}
         - name: private-key-volume
           secret:
             secretName: {{ $.Values.config.key.secretName }}

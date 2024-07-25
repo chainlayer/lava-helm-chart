@@ -4,11 +4,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "provider-config.name" $ }}
+  name: {{ include "config-map.name" $ }}
   namespace: {{ include "common.namespace" $ }}
   labels:
     {{- include "common.labels" $ | nindent 4 }}
 data:
-  config.yaml: |
+  {{ include "config-map.key" $ }}: |
     {{- toYaml .configYaml | nindent 4 }}
 {{ end }}{{ end }}

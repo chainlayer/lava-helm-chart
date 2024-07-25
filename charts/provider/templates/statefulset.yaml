@@ -92,6 +92,12 @@ spec:
             # exit when any command fails
             set -e
 
+            # Check if the key is already imported by attempting to show it
+            if lavap keys show {{ default .moniker .key.name }} --keyring-backend "test" --home {{ $.Values.persistence.mountPath }} --keyring-dir {{ $.Values.persistence.mountPath }} >/dev/null 2>&1; then
+              echo "Key has already been imported, exiting..."
+              exit 0
+            fi
+
             # Import key into keyring
             echo $KEY_PASSWORD | lavap keys \
               import {{ default .moniker .key.name }} /tmp/keyfile/{{ .key.secretKey }} \
@@ -118,7 +124,7 @@ spec:
         {{- toYaml . | nindent 8 }}
         {{- end }}
       containers:
-        - name: {{ include "common.fullname" $ }}
+        - name: "provider"
           {{- if .containerSecurityContext.enabled }}
           securityContext:
             {{- omit .containerSecurityContext "enabled" | toYaml | nindent 12 }}
@@ -131,7 +137,7 @@ spec:
           command: ["lavap"]
           args:
             - "rpcprovider"
-            - "{{ include "provider-config.path" $ }}"
+            - "{{ include "config-map.path" $ }}"
             - "--from"
             - "{{ default .moniker .key.name }}"
             - "--home"
@@ -168,7 +174,7 @@ spec:
             - "--cmd"
             - "lavap"
             - "rpcprovider"
-            - "{{ include "provider-config.path" $ }}"
+            - "{{ include "config-map.path" $ }}"
             - "--from"
             - "{{ default .moniker .key.name }}"
             - "--home"
@@ -261,8 +267,8 @@ spec:
             - name: data-volume
               mountPath: {{ $.Values.persistence.mountPath }}
             - name: config-volume
-              mountPath: {{ $.Values.persistence.mountPath }}/{{ include "provider-config.path" $ }}
-              subPath: {{ include "provider-config.path" $ }}
+              mountPath: {{ $.Values.persistence.mountPath }}/{{ include "config-map.path" $ }}
+              subPath: {{ include "config-map.path" $ }}
               readOnly: true
         {{- with .sidecars }}
         {{- toYaml . | nindent 8 }}
@@ -273,7 +279,7 @@ spec:
             name: {{ default (printf "%s-config" (include "common.fullname" $ )) $.Values.config.existingConfigMap.name }}
             items:
               - key: {{ default "config.yaml" $.Values.config.existingConfigMap.key }}
-                path: {{ include "provider-config.path" $ }}
+                path: {{ include "config-map.path" $ }}
         - name: private-key-volume
           secret:
             secretName: {{ $.Values.config.key.secretName }}
