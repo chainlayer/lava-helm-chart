@@ -1,5 +1,4 @@
 {{- with .Values.config }}{{- if not .existingConfigMap.enabled }}
-{{- $validation := required "[VALIDATION] Missing required value(s): 'configYaml', '.configYaml.endpoints'" (and .configYaml .configYaml.endpoints) }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -9,6 +8,6 @@ metadata:
   labels:
     {{- include "common.labels" $ | nindent 4 }}
 data:
-  {{ include "config-map.key" $ }}: |
-    {{- toYaml .configYaml | nindent 4 }}
+  {{ include "config-map.key" $ }}:
+    {{- .configYaml | nindent 4 }}
 {{ end }}{{ end }}
