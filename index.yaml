@@ -3,6 +3,16 @@ entries:
   lava-provider:
   - apiVersion: v2
     appVersion: 1.0.0
+    created: "2024-07-25T11:31:19.509446538Z"
+    description: A Helm chart for deployment of the Lava provider service
+    digest: 5102ec02c9761c4351a11900be556ec6c5943b79c8492dc3dbd4fe6f51752d2a
+    name: lava-provider
+    type: application
+    urls:
+    - https://github.com/chainlayer/lava-helm-chart/releases/download/lava-provider-0.0.9/lava-provider-0.0.9.tgz
+    version: 0.0.9
+  - apiVersion: v2
+    appVersion: 1.0.0
     created: "2024-07-25T11:11:48.598942238Z"
     description: A Helm chart for deployment of the Lava provider service
     digest: 89cd6ebf1a565504004bd134aa01caaba11d1303c306ab50ba25392bd1dfed1f
@@ -81,4 +91,4 @@ entries:
     urls:
     - https://github.com/chainlayer/lava-helm-chart/releases/download/lava-provider-0.0.1/lava-provider-0.0.1.tgz
     version: 0.0.1
-generated: "2024-07-25T11:11:48.598975811Z"
+generated: "2024-07-25T11:31:19.509490558Z"
