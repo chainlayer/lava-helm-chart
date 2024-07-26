@@ -128,7 +128,13 @@ provider:
   # -- The port used for the container
   containerPort:
     name: provider
-    number: 2204
+    number: 2221
+
+  # -- Additional ports to expose on the container
+  extraPorts: []
+  #  - name: eth1
+  #    number: 2222
+  #    protocol: TCP
 
   # -- Probe configuration for the pods
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
@@ -136,7 +142,7 @@ provider:
     # -- Enable Kubernetes liveness probe for the pods
     enabled: true
     # -- Number of seconds after the container has started before [probe] is initiated
-    initialDelaySeconds: 30
+    initialDelaySeconds: 15
     # -- How often (in seconds) to perform the [probe]
     periodSeconds: 10
     # -- Number of seconds after which the [probe] times out
@@ -144,13 +150,13 @@ provider:
     # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
     successThreshold: 1
     # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
-    failureThreshold: 10
+    failureThreshold: 5
 
   livenessProbe:
     # -- Enable Kubernetes liveness probe for the pods
     enabled: true
     # -- Number of seconds after the container has started before [probe] is initiated
-    initialDelaySeconds: 60
+    initialDelaySeconds: 30
     # -- How often (in seconds) to perform the [probe]
     periodSeconds: 5
     # -- Number of seconds after which the [probe] times out
@@ -158,7 +164,7 @@ provider:
     # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
     successThreshold: 1
     # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
-    failureThreshold: 20
+    failureThreshold: 10
 
   # -- Custom liveness probe configuration
   customLivenessProbe: {}
@@ -344,10 +350,10 @@ service:
   type: ClusterIP
   # -- The port used for the service
   port:
-    # -- The port name
-    name: service
-    # -- The port number
-    number: 2204
+    # -- The port name. If not set, the containerPort.name is used
+    name: ""
+    # -- The port number, If not set, the containerPort.number is used
+    number: ""
   # -- ClusterIP will get created with the IP specified in this field
   clusterIP: ""
   # -- LoadBalancer will get created with the IP specified in this field
@@ -430,7 +436,7 @@ metrics:
     # -- Metrics service port name
     name: metrics
     # -- Metrics service port number
-    number: 2205
+    number: 7776
 
   serviceMonitor:
     # -- Enable a Prometheus ServiceMonitor
