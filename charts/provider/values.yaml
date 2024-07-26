@@ -128,7 +128,7 @@ provider:
   # -- The port used for the container
   containerPort:
     name: provider
-    number: 2204
+    number: 2221
 
   # -- Probe configuration for the pods
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
@@ -430,7 +430,7 @@ metrics:
     # -- Metrics service port name
     name: metrics
     # -- Metrics service port number
-    number: 2205
+    number: 7776
 
   serviceMonitor:
     # -- Enable a Prometheus ServiceMonitor
