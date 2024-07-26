@@ -136,7 +136,7 @@ provider:
     # -- Enable Kubernetes liveness probe for the pods
     enabled: true
     # -- Number of seconds after the container has started before [probe] is initiated
-    initialDelaySeconds: 30
+    initialDelaySeconds: 15
     # -- How often (in seconds) to perform the [probe]
     periodSeconds: 10
     # -- Number of seconds after which the [probe] times out
@@ -144,13 +144,13 @@ provider:
     # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
     successThreshold: 1
     # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
-    failureThreshold: 10
+    failureThreshold: 5
 
   livenessProbe:
     # -- Enable Kubernetes liveness probe for the pods
     enabled: true
     # -- Number of seconds after the container has started before [probe] is initiated
-    initialDelaySeconds: 60
+    initialDelaySeconds: 30
     # -- How often (in seconds) to perform the [probe]
     periodSeconds: 5
     # -- Number of seconds after which the [probe] times out
@@ -158,7 +158,7 @@ provider:
     # -- Minimum consecutive successes for the [probe] to be considered successful after having failed
     successThreshold: 1
     # -- Minimum consecutive failures for the [probe] to be considered failed after having succeeded
-    failureThreshold: 20
+    failureThreshold: 10
 
   # -- Custom liveness probe configuration
   customLivenessProbe: {}
