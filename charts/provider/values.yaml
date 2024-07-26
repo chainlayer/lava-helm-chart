@@ -344,10 +344,10 @@ service:
   type: ClusterIP
   # -- The port used for the service
   port:
-    # -- The port name
-    name: service
-    # -- The port number
-    number: 2204
+    # -- The port name. If not set, the containerPort.name is used
+    name: ""
+    # -- The port number, If not set, the containerPort.number is used
+    number: ""
   # -- ClusterIP will get created with the IP specified in this field
   clusterIP: ""
   # -- LoadBalancer will get created with the IP specified in this field

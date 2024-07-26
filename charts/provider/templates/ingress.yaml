@@ -36,7 +36,7 @@ spec:
               service:
                 name: {{ default ( include "common.fullname" $ ) $.Values.service.nameOverride }}
                 port:
-                  number: {{ $.Values.service.port.number }}
+                  number: {{ default $.Values.provider.containerPort.number $.Values.service.port.number }}
           {{- end }}
     {{- end }}
 {{- end }}{{- end }}

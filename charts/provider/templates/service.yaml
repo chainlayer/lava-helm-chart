@@ -1,5 +1,4 @@
 {{- with .Values.service }}{{- if .enabled }}
-{{- $validation := required "[VALIDATION] Missing one or more required values for Service: 'type', 'port.name', 'port.number'" (and .type .port.name .port.number) }}
 ---
 apiVersion: v1
 kind: Service
@@ -15,9 +14,9 @@ metadata:
 spec:
   type: {{ .type }}
   ports:
-    - name: {{ .port.name }}
-      port: {{ .port.number }}
-      targetPort: {{ .port.name }}
+    - name: {{ default $.Values.provider.containerPort.name .port.name }}
+      port: {{ default $.Values.provider.containerPort.number .port.number }}
+      targetPort: {{ $.Values.provider.containerPort.name }}
       protocol: TCP
     {{- with $.Values.metrics }}{{- if .enabled }}
     - name: {{ .port.name }}
