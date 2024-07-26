@@ -221,6 +221,9 @@ spec:
             - name: {{ .containerPort.name }}
               containerPort: {{ .containerPort.number }}
               protocol: TCP
+            {{- with .extraPorts }}
+            {{- toYaml . | nindent 4 }}
+            {{- end }}
             {{- with $.Values.metrics }}{{- if .enabled }}
             - name: {{ .port.name }}
               containerPort: {{ .port.number }}

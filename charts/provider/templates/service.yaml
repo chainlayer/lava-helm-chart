@@ -18,6 +18,9 @@ spec:
       port: {{ default $.Values.provider.containerPort.number .port.number }}
       targetPort: {{ $.Values.provider.containerPort.name }}
       protocol: TCP
+    {{- with $.Values.provider.extraPorts }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
     {{- with $.Values.metrics }}{{- if .enabled }}
     - name: {{ .port.name }}
       port: {{ .port.number }}

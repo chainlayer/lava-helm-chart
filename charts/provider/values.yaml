@@ -130,6 +130,12 @@ provider:
     name: provider
     number: 2221
 
+  # -- Additional ports to expose on the container
+  extraPorts: []
+  #  - name: eth1
+  #    number: 2222
+  #    protocol: TCP
+
   # -- Probe configuration for the pods
   ## Ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/
   readinessProbe:
