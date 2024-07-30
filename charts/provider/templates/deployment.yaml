@@ -76,10 +76,10 @@ spec:
           {{- end }}
           {{- with $.Values.config }}
           command:
-           - sh
+           - bash
            - -c
            - |
-            #!/bin/sh
+            #!/bin/bash
             # exit when any command fails
             set -e
 
